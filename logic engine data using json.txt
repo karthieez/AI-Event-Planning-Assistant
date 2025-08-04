@@ -1,0 +1,51 @@
+{
+  "rules": [
+    {
+      "id": "rule1",
+      "condition": {
+        "event_type": "wedding"
+      },
+      "actions": [
+        "Add 'Book wedding venue'",
+        "Add 'Hire photographer'",
+        "Add 'Send invitations'",
+        "Add 'Plan wedding dress and attire'"
+      ]
+    },
+    {
+      "id": "rule2",
+      "condition": {
+        "event_type": "birthday",
+        "guest_count": { "gte": 20 }
+      },
+      "actions": [
+        "Add 'Book birthday party hall'",
+        "Add 'Order birthday cake'",
+        "Add 'Plan games and entertainment'"
+      ]
+    },
+    {
+      "id": "rule3",
+      "condition": {
+        "budget": { "lte": 5000 }
+      },
+      "actions": [
+        "Add 'Use low-cost venue options'",
+        "Add 'Use DIY decorations'",
+        "Remove 'Luxury catering services'"
+      ]
+    },
+    {
+      "id": "rule4",
+      "condition": {
+        "event_type": "corporate",
+        "location": "virtual"
+      },
+      "actions": [
+        "Add 'Set up video conferencing platform'",
+        "Add 'Send calendar invites to participants'",
+        "Add 'Prepare online presentation material'"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+// src/App.js
+
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
+function App() {
+  const [eventTypes, setEventTypes] = useState([]);
+  const [selectedType, setSelectedType] = useState("");
+  const [checklist, setChecklist] = useState([]);
+  const [eventId, setEventId] = useState(1); // sample event ID for demonstration
+  const [budgets, setBudgets] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [budgetForm, setBudgetForm] = useState({ category: "", amount: "" });
+  const [vendorForm, setVendorForm] = useState({ name: "", contact: "", service: "" });
+
+  useEffect(() => {
+    axios.get("http://localhost:4000/api/event-types")
+      .then(res => setEventTypes(res.data));
+  }, []);
+
+  useEffect(() => {
+    if (selectedType) {
+      axios.get(`http://localhost:4000/api/checklist/${selectedType}`)
+        .then(res => setChecklist(res.data));
+    }
+  }, [selectedType]);
+
+  useEffect(() => {
+    axios.get(`http://localhost:4000/api/budget/${eventId}`)
+      .then(res => setBudgets(res.data));
+    axios.get(`http://localhost:4000/api/vendors/${eventId}`)
+      .then(res => setVendors(res.data));
+  }, [eventId]);
+
+  // Budget
+  const handleBudgetAdd = async (e) => {
+    e.preventDefault();
+    await axios.post("http://localhost:4000/api/budget", {
+      ...budgetForm,
+      event_id: eventId,
+    });
+    setBudgetForm({ category: "", amount: "" });
+    axios.get(`http://localhost:4000/api/budget/${eventId}`)
+      .then(res => setBudgets(res.data));
+  };
+
+  // Vendor
+  const handleVendorAdd = async (e) => {
+    e.preventDefault();
+    await axios.post("http://localhost:4000/api/vendors", {
+      ...vendorForm,
+      event_id: eventId,
+    });
+    setVendorForm({ name: "", contact: "", service: "" });
+    axios.get(`http://localhost:4000/api/vendors/${eventId}`)
+      .then(res => setVendors(res.data));
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6 text-center">AI Event Planning Assistant</h1>
+
+        {/* Event Type Selector */}
+        <div className="mb-4">
+          <label className="block font-semibold mb-1">Select Event Type:</label>
+          <select
+            className="p-2 border rounded w-full"
+            value={selectedType}
+            onChange={e => setSelectedType(e.target.value)}
+          >
+            <option value="">Choose...</option>
+            {eventTypes.map((type) => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Checklist */}
+        {checklist.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-2">Checklist</h2>
+            <ul className="list-disc pl-6">
+              {checklist.map(item =>
+                <li key={item.id}>{item.task} <span className="text-gray-500">(Due: {item.due_days_before_event} days before)</span></li>
+              )}
+            </ul>
+          </div>
+        )}
+
+        {/* Budget Management */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Budget Planner</h2>
+          <form className="flex gap-2 mb-3" onSubmit={handleBudgetAdd}>
+            <input
+              className="p-2 border rounded flex-1"
+              type="text"
+              placeholder="Category"
+              value={budgetForm.category}
+              onChange={e => setBudgetForm({ ...budgetForm, category: e.target.value })}
+              required
+            />
+            <input
+              className="p-2 border rounded w-28"
+              type="number"
+              placeholder="Amount"
+              value={budgetForm.amount}
+              onChange={e => setBudgetForm({ ...budgetForm, amount: e.target.value })}
+              required
+            />
+            <button className="bg-blue-600 text-white px-4 rounded" type="submit">Add</button>
+          </form>
+          <table className="w-full border mt-2">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="py-1">Category</th><th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {budgets.map(b => (
+                <tr key={b.id}>
+                  <td className="py-1">{b.category}</td>
+                  <td>₹{parseFloat(b.amount).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Vendor Management */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Vendors</h2>
+          <form className="flex gap-2 mb-3 flex-wrap" onSubmit={handleVendorAdd}>
+            <input
+              className="p-2 border rounded flex-1"
+              type="text"
+              placeholder="Name"
+              value={vendorForm.name}
+              onChange={e => setVendorForm({ ...vendorForm, name: e.target.value })}
+              required
+            />
+            <input
+              className="p-2 border rounded flex-1"
+              type="text"
+              placeholder="Contact"
+              value={vendorForm.contact}
+              onChange={e => setVendorForm({ ...vendorForm, contact: e.target.value })}
+              required
+            />
+            <input
+              className="p-2 border rounded w-40"
+              type="text"
+              placeholder="Service"
+              value={vendorForm.service}
+              onChange={e => setVendorForm({ ...vendorForm, service: e.target.value })}
+              required
+            />
+            <button className="bg-green-700 text-white px-4 rounded" type="submit">Add</button>
+          </form>
+          <ul className="list-disc pl-6">
+            {vendors.map(v =>
+              <li key={v.id}>
+                <span className="font-semibold">{v.name}</span> ({v.service}) — <span className="text-gray-500">{v.contact}</span>
+              </li>
+            )}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
